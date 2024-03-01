@@ -7,6 +7,7 @@ import cv2 as cv
 import numpy
 import pyautogui
 import shutil
+import pytesseract
 
 
 class Cura():
@@ -19,6 +20,9 @@ class Cura():
 
     def play_game(self):
         while True:
+            opencv_image = cv.imread(os.path.join(self.top_level_dir, "Images", "title_screen_override_save.png"))
+            rgb_image = cv.cvtColor(opencv_image, cv.COLOR_BGR2RGB)
+            print(f"Image Text: {pytesseract.image_to_string(rgb_image)}")
             time.sleep(5)
 
 
