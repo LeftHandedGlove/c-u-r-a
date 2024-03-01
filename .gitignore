@@ -1,5 +1,6 @@
 # Repo specific stuff
 ftl_game_files
+*.ini
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
