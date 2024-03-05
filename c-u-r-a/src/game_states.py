@@ -3,7 +3,7 @@ import abc
 from game_window import GameWindow, GameImages, GameEvent
 
 
-class States(enum.Enum):
+class GameStates(enum.Enum):
     IDLE = 0
     WAITING_FOR_GAME_TO_LOAD = 1
     SELECTING_LANGUAGE = 2
@@ -15,9 +15,9 @@ class States(enum.Enum):
 class BaseState:
     def __init__(self, game_window:GameWindow):
         self.game_window = game_window
-        self.previous_state = States.IDLE
+        self.previous_state = GameStates.IDLE
 
-    def run(self, previous_state) -> States:
+    def run(self, previous_state) -> GameStates:
         self.previous_state = previous_state
         self.game_window.grab_game_image()
         self.state_actions()
@@ -29,7 +29,7 @@ class BaseState:
         raise NotImplementedError()
 
     @abc.abstractmethod
-    def check_for_state_change(self) -> States:
+    def check_for_state_change(self) -> GameStates:
         raise NotImplementedError()
 
 
@@ -40,8 +40,8 @@ class IdleState(BaseState):
     def state_actions(self):
         pass
 
-    def check_for_state_change(self) -> States:
-        return States.IDLE
+    def check_for_state_change(self) -> GameStates:
+        return GameStates.IDLE
 
 
 class WaitingForGameToLoadState(BaseState):
@@ -51,12 +51,12 @@ class WaitingForGameToLoadState(BaseState):
     def state_actions(self):
         pass
 
-    def check_for_state_change(self) -> States:
+    def check_for_state_change(self) -> GameStates:
         found, _ = self.game_window.look_for_image(GameImages.LANG_SELECT_ENG)
         if found:
-            return States.SELECTING_LANGUAGE
+            return GameStates.SELECTING_LANGUAGE
         else:
-            return States.WAITING_FOR_GAME_TO_LOAD
+            return GameStates.WAITING_FOR_GAME_TO_LOAD
         
 
 class SelectingLanguageState(BaseState):
@@ -66,12 +66,12 @@ class SelectingLanguageState(BaseState):
     def state_actions(self):
         self.game_window.click_on_image(GameImages.LANG_SELECT_ENG)
 
-    def check_for_state_change(self) -> States:
+    def check_for_state_change(self) -> GameStates:
         found, _ = self.game_window.look_for_image(GameImages.TITLE_NEW_GAME)
         if found:
-            return States.STARTING_NEW_GAME
+            return GameStates.STARTING_NEW_GAME
         else:
-            return States.SELECTING_LANGUAGE
+            return GameStates.SELECTING_LANGUAGE
         
 
 class StartingNewGameState(BaseState):
@@ -87,14 +87,14 @@ class StartingNewGameState(BaseState):
         self.game_window.click_on_image(GameImages.SHIP_SEL_EASY)
         self.game_window.click_on_image(GameImages.SHIP_SEL_START)
     
-    def check_for_state_change(self) -> States:
+    def check_for_state_change(self) -> GameStates:
         title_found, _ = self.game_window.look_for_image(GameImages.TITLE_NEW_GAME)
         confirm_found, _ = self.game_window.look_for_image(GameImages.TITLE_CONFIRM_OVERRIDE)
         ship_select_found, _ = self.game_window.look_for_image(GameImages.SHIP_SEL_START)
         if title_found or confirm_found or ship_select_found:
-            return States.STARTING_NEW_GAME
+            return GameStates.STARTING_NEW_GAME
         else:
-            return States.HANDLING_EVENT
+            return GameStates.HANDLING_EVENT
         
 
 class HandlingEvent(BaseState):
@@ -104,12 +104,12 @@ class HandlingEvent(BaseState):
         self.event_memory = {}
 
     def state_actions(self):
-        if self.previous_state == States.NODE_JUMP:
+        if self.previous_state == GameStates.NODE_JUMP:
             self.node_events.clear()
         game_event = self.game_window.read_event_text()
         
-    def check_for_state_change(self) -> States:
-        return States.IDLE
+    def check_for_state_change(self) -> GameStates:
+        return GameStates.IDLE
     
     def fill_out_event_from_memory(self, event:GameEvent) -> GameEvent:
         if event.pre_options_text in self.event_memory.keys():
